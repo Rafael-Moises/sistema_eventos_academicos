@@ -48,8 +48,7 @@ As principais relações são:
 
 ## API
 A API foi desenvolvida utilizando FastAPI.
-A documentação interativa é disponibilizada pelo Swagger através da rota:
-`/docs`
+A documentação interativa é disponibilizada pelo Swagger através da rota: `/docs`
 Com a aplicação executando localmente:
 `http://127.0.0.1:8000/docs`
 
@@ -62,4 +61,16 @@ sistema_eventos_academicos/
 ├── database.py
 ├── requirements.txt
 └── .gitignore
+
+
+
+## Comandos para executar a API
+`uvicorn main:app --reload` → executa a API  
+ 
+### 1. Instalar as bibliotecas
+`pip install -r requirements.txt` → instala as bibliotecas  
+Após baixar/clonar o projeto, execute:
+```bash
+venv/bin/python -m pip install -r requirements.txt
+
 

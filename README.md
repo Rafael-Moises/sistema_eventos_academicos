@@ -61,16 +61,3 @@ sistema_eventos_academicos/
 ├── database.py
 ├── requirements.txt
 └── .gitignore
-
-
-
-## Comandos para executar a API
-`uvicorn main:app --reload` → executa a API  
- 
-### 1. Instalar as bibliotecas
-`pip install -r requirements.txt` → instala as bibliotecas  
-Após baixar/clonar o projeto, execute:
-```bash
-venv/bin/python -m pip install -r requirements.txt
-
-

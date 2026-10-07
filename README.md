@@ -1,4 +1,3 @@
-
 ## Equipe
 **Integrantes do projeto:**
 - Rafael Moisés Ferreira Santiago

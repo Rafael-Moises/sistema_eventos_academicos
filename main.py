@@ -1,3 +1,7 @@
+# Sistema de Eventos academicos
+# Autores: Rafael Moises, Elizeu da Silva e Mayk Dias
+# Data: 06/10/2026
+
 from fastapi import FastAPI, HTTPException, Depends
 from model import Evento, Categoria, Usuario, Inscricao, Certificado, Organizador
 from sqlalchemy.orm import Session

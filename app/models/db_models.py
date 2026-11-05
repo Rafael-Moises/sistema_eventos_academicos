@@ -1,6 +1,7 @@
 from sqlalchemy import String, Integer, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
-from database import Base
+from typing import Optional
+from app.database.database import Base
 
 # EVENTOS
 
@@ -32,6 +33,7 @@ class UsuarioDB(Base):
     nome: Mapped[str] = mapped_column(String(150), nullable=False)
     email: Mapped[str] = mapped_column(String(150), nullable=False)
     tipo: Mapped[str] = mapped_column(String(50), nullable=False)
+    senha_hash: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
 # INSCRIÇÕES
 

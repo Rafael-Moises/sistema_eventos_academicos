@@ -3,6 +3,8 @@
 - Rafael Moisés Ferreira Santiago
 - Elizeu da Silva Joaquin
 - Mayk Dias de Oliveira Magalhães
+- Anderson trindade
+- Jose rennan
 
 # Sistema de Gestão de Eventos Acadêmicos
 API REST desenvolvida para o gerenciamento de eventos acadêmicos, permitindo controlar eventos, categorias, usuários, inscrições, certificados e organizadores.

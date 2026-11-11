@@ -1,3 +1,8 @@
+
+# Sistema de Gestão de Eventos Acadêmicos
+
+API REST desenvolvida com **Python e FastAPI** para o gerenciamento de eventos acadêmicos. O sistema permite administrar eventos, categorias, usuários, inscrições, certificados e organizadores, contando também com mecanismos de autenticação, autorização e segurança.
+
 ## Equipe
 
 **Integrantes do projeto:**
@@ -8,13 +13,9 @@
 - Anderson trindade
 - Jose rennan
 
-# Sistema de Gestão de Eventos Acadêmicos
-
-API REST desenvolvida com **Python e FastAPI** para o gerenciamento de eventos acadêmicos. O sistema permite administrar eventos, categorias, usuários, inscrições, certificados e organizadores, contando também com mecanismos de autenticação e segurança.
-
 ## Objetivo
 
-O objetivo do projeto é disponibilizar uma API para centralizar e organizar o gerenciamento de eventos acadêmicos, permitindo o cadastro, consulta, atualização e exclusão de informações, além da aplicação de regras de negócio, integração com banco de dados PostgreSQL e controle de acesso por autenticação.
+O objetivo do projeto é disponibilizar uma API para centralizar e organizar o gerenciamento de eventos acadêmicos, permitindo o cadastro, consulta, atualização e exclusão de informações, além da aplicação de regras de negócio, integração com banco de dados PostgreSQL e controle de acesso por autenticação e autorização.
 
 ## Tecnologias utilizadas
 
@@ -28,6 +29,8 @@ O objetivo do projeto é disponibilizar uma API para centralizar e organizar o g
 - PyJWT
 - Argon2
 - Python-dotenv
+- Pytest
+- HTTPX
 
 ## Funcionalidades
 
@@ -46,7 +49,7 @@ Também possui validações de regras de negócio, controle de capacidade dos ev
 
 ### Autenticação e segurança
 
-Nesta etapa, foram implementados mecanismos de autenticação e proteção da aplicação:
+Foram implementados mecanismos de autenticação e proteção da aplicação:
 
 - Cadastro de usuários com credenciais de acesso.
 - Armazenamento de senhas utilizando hash seguro com Argon2.
@@ -58,6 +61,65 @@ Nesta etapa, foram implementados mecanismos de autenticação e proteção da ap
 - Consulta dos dados do usuário autenticado.
 - Retorno HTTP 401 para tentativas de acesso sem autenticação válida.
 - Configuração da chave JWT por variável de ambiente.
+
+### Autorização e controle de acesso
+
+O sistema possui dois perfis de usuário com permissões distintas:
+
+**Participante:**
+
+- Consultar eventos e categorias.
+- Realizar inscrições em eventos.
+- Consultar suas próprias inscrições.
+- Atualizar ou cancelar suas próprias inscrições.
+- Excluir suas próprias inscrições, respeitando as regras de negócio.
+- Consultar seus próprios dados e certificados.
+
+**Organizador:**
+
+- Consultar eventos e categorias.
+- Cadastrar, atualizar e excluir seus próprios eventos.
+- Gerenciar categorias.
+- Consultar inscrições vinculadas aos seus eventos.
+- Emitir, consultar, atualizar e excluir certificados dos seus eventos.
+- Consultar e administrar registros de usuários.
+- Gerenciar seu próprio registro de organizador.
+
+O sistema também verifica a propriedade dos recursos, impedindo que participantes acessem inscrições e certificados de outros usuários ou que organizadores administrem eventos de outros organizadores.
+
+### Matriz de permissões
+
+| Recurso / Operação | Participante | Organizador |
+|---|---|---|
+| Consultar eventos | Permitido | Permitido |
+| Criar eventos | Negado | Permitido (próprios) |
+| Atualizar eventos | Negado | Permitido (próprios) |
+| Excluir eventos | Negado | Permitido (próprios) |
+| Consultar categorias | Permitido | Permitido |
+| Criar categorias | Negado | Permitido |
+| Atualizar categorias | Negado | Permitido |
+| Excluir categorias | Negado | Permitido |
+| Consultar inscrições | Somente próprias | Somente dos próprios eventos |
+| Criar inscrições | Permitido | Negado |
+| Atualizar inscrições | Somente próprias | Negado |
+| Excluir inscrições | Somente próprias | Negado |
+| Consultar certificados | Somente próprios | Somente dos próprios eventos |
+| Emitir certificados | Negado | Permitido (próprios eventos) |
+| Atualizar certificados | Negado | Permitido (próprios eventos) |
+| Excluir certificados | Negado | Permitido (próprios eventos) |
+| Consultar usuários | Somente os próprios dados | Permitido |
+| Gerenciar usuários | Negado | Permitido |
+| Consultar organizadores | Permitido | Permitido |
+| Gerenciar organizadores | Negado | Somente o próprio registro |
+| Consultar perfil (`/me`) | Permitido | Permitido |
+
+### Tratamento de permissões
+
+O controle de acesso utiliza dependências para verificar o perfil do usuário autenticado.
+
+- **HTTP 401 Unauthorized:** token ausente, inválido ou expirado.
+- **HTTP 403 Forbidden:** usuário autenticado, mas sem permissão para executar a operação.
+- **HTTP 404 Not Found:** recurso solicitado não encontrado.
 
 ## Entidades
 
@@ -115,6 +177,8 @@ Entre as principais regras implementadas estão:
 - Usuários com inscrições não podem ser excluídos.
 - Organizadores vinculados a eventos não podem ser excluídos.
 - Inscrições que possuem certificado não podem ser excluídas.
+- Participantes somente podem gerenciar suas próprias inscrições.
+- Organizadores somente podem gerenciar seus próprios eventos e os certificados relacionados a eles.
 
 ## Autenticação da API
 
@@ -132,6 +196,33 @@ Após realizar o login, o usuário recebe um token JWT que deve ser enviado no c
 
 As senhas não são armazenadas em texto puro, sendo protegidas por hash Argon2.
 
+A chave utilizada para assinatura dos tokens é configurada por variável de ambiente.
+
+## Testes automatizados
+
+O projeto utiliza **Pytest** e **HTTPX** para a execução de testes automatizados da API.
+
+Os testes verificam:
+
+- Cadastro de usuários.
+- Impedimento de cadastro com e-mail já existente.
+- Login com credenciais válidas.
+- Bloqueio de login com senha incorreta.
+- Bloqueio de acesso sem token.
+- Bloqueio de acesso com token inválido.
+- Restrição de operações incompatíveis com o perfil Participante.
+- Restrição de operações incompatíveis com o perfil Organizador.
+
+Atualmente, a suíte possui 14 testes automatizados aprovados.
+
+### Executar os testes
+
+Na raiz do projeto, execute:
+
+```bash
+./venv/bin/python -m pytest -v
+```
+
 ## Documentação da API
 
 A documentação interativa é disponibilizada automaticamente pelo Swagger UI.
@@ -140,7 +231,7 @@ Com a aplicação em execução, acesse:
 
 **http://127.0.0.1:8000/docs**
 
-O Swagger permite visualizar, testar e executar os endpoints, incluindo as operações de autenticação.
+O Swagger permite visualizar, testar e executar os endpoints, incluindo as operações de autenticação e as rotas protegidas.
 
 ## Como executar a API
 
@@ -221,6 +312,7 @@ sistema_eventos_academicos/
 │   ├── core/
 │   │   ├── config.py
 │   │   ├── deps.py
+│   │   ├── permissions.py
 │   │   └── security.py
 │   │
 │   ├── database/
@@ -233,6 +325,10 @@ sistema_eventos_academicos/
 │   │   └── model.py
 │   │
 │   └── main.py
+│
+├── tests/
+│   ├── conftest.py
+│   └── test_autenticacao.py
 │
 ├── docs/
 ├── requirements.txt

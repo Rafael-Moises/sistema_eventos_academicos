@@ -88,31 +88,29 @@ O sistema possui dois perfis de usuário com permissões distintas:
 O sistema também verifica a propriedade dos recursos, impedindo que participantes acessem inscrições e certificados de outros usuários ou que organizadores administrem eventos de outros organizadores.
 
 ### Matriz de permissões
-
-| Recurso / Operação | Participante | Organizador |
-|---|---|---|
-| Consultar eventos | Permitido | Permitido |
-| Criar eventos | Negado | Permitido (próprios) |
-| Atualizar eventos | Negado | Permitido (próprios) |
-| Excluir eventos | Negado | Permitido (próprios) |
-| Consultar categorias | Permitido | Permitido |
-| Criar categorias | Negado | Permitido |
-| Atualizar categorias | Negado | Permitido |
-| Excluir categorias | Negado | Permitido |
-| Consultar inscrições | Somente próprias | Somente dos próprios eventos |
-| Criar inscrições | Permitido | Negado |
-| Atualizar inscrições | Somente próprias | Negado |
-| Excluir inscrições | Somente próprias | Negado |
-| Consultar certificados | Somente próprios | Somente dos próprios eventos |
-| Emitir certificados | Negado | Permitido (próprios eventos) |
-| Atualizar certificados | Negado | Permitido (próprios eventos) |
-| Excluir certificados | Negado | Permitido (próprios eventos) |
-| Consultar usuários | Somente os próprios dados | Permitido |
-| Gerenciar usuários | Negado | Permitido |
-| Consultar organizadores | Permitido | Permitido |
-| Gerenciar organizadores | Negado | Somente o próprio registro |
-| Consultar perfil (`/me`) | Permitido | Permitido |
-
+| Recurso / Operação | Endpoint | Participante | Organizador |
+|---|---|---|---|
+| Consultar eventos | GET `/eventos` e `/eventos/{id}` | Permitido | Permitido |
+| Criar eventos | POST `/eventos` | Negado | Permitido |
+| Atualizar eventos | PUT `/eventos/{id}` | Negado | Somente próprios |
+| Excluir eventos | DELETE `/eventos/{id}` | Negado | Somente próprios |
+| Consultar categorias | GET `/categorias` | Permitido | Permitido |
+| Criar categorias | POST `/categorias` | Negado | Permitido |
+| Atualizar categorias | PUT `/categorias/{id}` | Negado | Permitido |
+| Excluir categorias | DELETE `/categorias/{id}` | Negado | Permitido |
+| Consultar inscrições | GET `/inscricoes` e `/inscricoes/{id}` | Somente próprias | Somente dos próprios eventos |
+| Criar inscrições | POST `/inscricoes` | Permitido | Negado |
+| Atualizar inscrições | PUT `/inscricoes/{id}` | Somente próprias | Negado |
+| Excluir inscrições | DELETE `/inscricoes/{id}` | Somente próprias | Negado |
+| Consultar certificados | GET `/certificados` e `/certificados/{id}` | Somente próprios | Somente dos próprios eventos |
+| Emitir certificados | POST `/certificados` | Negado | Somente dos próprios eventos |
+| Atualizar certificados | PUT `/certificados/{id}` | Negado | Somente dos próprios eventos |
+| Excluir certificados | DELETE `/certificados/{id}` | Negado | Somente dos próprios eventos |
+| Consultar usuários | GET `/usuarios` e `/usuarios/{id}` | Somente próprios dados | Permitido |
+| Gerenciar usuários | POST, PUT e DELETE `/usuarios` | Negado | Permitido, conforme regras |
+| Consultar organizadores | GET `/organizadores` e `/organizadores/{id}` | Permitido | Permitido |
+| Gerenciar organizadores | POST, PUT e DELETE `/organizadores` | Negado | Somente próprio registro |
+| Consultar perfil | GET `/me` | Permitido | Permitido |
 ### Tratamento de permissões
 
 O controle de acesso utiliza dependências para verificar o perfil do usuário autenticado.

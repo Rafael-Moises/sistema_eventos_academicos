@@ -19,6 +19,28 @@ from app.schemas.model import Evento
 router = APIRouter(tags=["Eventos"])
 
 
+def normalizar_email(email: str) -> str:
+    """Padroniza o e-mail para comparação."""
+    return email.strip().casefold()
+
+
+def validar_data_evento(data: str, mensagem_data_passada: str):
+    """Valida o formato e impede eventos com datas anteriores a hoje."""
+    try:
+        data_evento = date.fromisoformat(data)
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="A data deve estar no formato AAAA-MM-DD."
+        )
+
+    if data_evento < date.today():
+        raise HTTPException(
+            status_code=400,
+            detail=mensagem_data_passada
+        )
+
+
 def verificar_dono_evento(
     evento_db: EventoDB,
     usuario: UsuarioDB,
@@ -28,7 +50,11 @@ def verificar_dono_evento(
         OrganizadorDB.id == evento_db.organizador_id
     ).first()
 
-    if organizador is None or organizador.email.casefold() != usuario.email.casefold():
+    if (
+        organizador is None
+        or normalizar_email(organizador.email)
+        != normalizar_email(usuario.email)
+    ):
         raise HTTPException(
             status_code=403,
             detail="Você não tem permissão para administrar este evento."
@@ -51,16 +77,22 @@ def criar_evento(
     ).first()
 
     if categoria is None:
-        raise HTTPException(status_code=404, detail="Categoria não encontrada.")
+        raise HTTPException(
+            status_code=404,
+            detail="Categoria não encontrada."
+        )
 
     organizador = db.query(OrganizadorDB).filter(
         OrganizadorDB.id == evento.organizador_id
     ).first()
 
     if organizador is None:
-        raise HTTPException(status_code=404, detail="Organizador não encontrado.")
+        raise HTTPException(
+            status_code=404,
+            detail="Organizador não encontrado."
+        )
 
-    if organizador.email.casefold() != usuario_atual.email.casefold():
+    if normalizar_email(organizador.email) != normalizar_email(usuario_atual.email):
         raise HTTPException(
             status_code=403,
             detail="Você só pode criar eventos vinculados à sua conta."
@@ -72,19 +104,10 @@ def criar_evento(
             detail="O número de vagas deve ser maior que zero."
         )
 
-    try:
-        data_evento = date.fromisoformat(evento.data)
-    except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="A data deve estar no formato AAAA-MM-DD."
-        )
-
-    if data_evento < date.today():
-        raise HTTPException(
-            status_code=400,
-            detail="Não é permitido cadastrar evento com data passada."
-        )
+    validar_data_evento(
+        evento.data,
+        "Não é permitido cadastrar evento com data passada."
+    )
 
     novo_evento = EventoDB(
         titulo=evento.titulo,
@@ -117,7 +140,10 @@ def buscar_evento(
     ).first()
 
     if evento is None:
-        raise HTTPException(status_code=404, detail="Evento não encontrado.")
+        raise HTTPException(
+            status_code=404,
+            detail="Evento não encontrado."
+        )
 
     return evento
 
@@ -134,7 +160,10 @@ def atualizar_evento(
     ).first()
 
     if evento_db is None:
-        raise HTTPException(status_code=404, detail="Evento não encontrado.")
+        raise HTTPException(
+            status_code=404,
+            detail="Evento não encontrado."
+        )
 
     verificar_dono_evento(evento_db, usuario_atual, db)
 
@@ -143,16 +172,22 @@ def atualizar_evento(
     ).first()
 
     if categoria is None:
-        raise HTTPException(status_code=404, detail="Categoria não encontrada.")
+        raise HTTPException(
+            status_code=404,
+            detail="Categoria não encontrada."
+        )
 
     organizador = db.query(OrganizadorDB).filter(
         OrganizadorDB.id == evento.organizador_id
     ).first()
 
     if organizador is None:
-        raise HTTPException(status_code=404, detail="Organizador não encontrado.")
+        raise HTTPException(
+            status_code=404,
+            detail="Organizador não encontrado."
+        )
 
-    if organizador.email.casefold() != usuario_atual.email.casefold():
+    if normalizar_email(organizador.email) != normalizar_email(usuario_atual.email):
         raise HTTPException(
             status_code=403,
             detail="Você não pode transferir o evento para outro organizador."
@@ -175,19 +210,10 @@ def atualizar_evento(
             detail="O número de vagas não pode ser menor que a quantidade de inscrições ativas."
         )
 
-    try:
-        data_evento = date.fromisoformat(evento.data)
-    except ValueError:
-        raise HTTPException(
-            status_code=400,
-            detail="A data deve estar no formato AAAA-MM-DD."
-        )
-
-    if data_evento < date.today():
-        raise HTTPException(
-            status_code=400,
-            detail="Não é permitido atualizar evento para uma data passada."
-        )
+    validar_data_evento(
+        evento.data,
+        "Não é permitido atualizar evento para uma data passada."
+    )
 
     evento_db.titulo = evento.titulo
     evento_db.descricao = evento.descricao
@@ -218,7 +244,10 @@ def excluir_evento(
     ).first()
 
     if evento_db is None:
-        raise HTTPException(status_code=404, detail="Evento não encontrado.")
+        raise HTTPException(
+            status_code=404,
+            detail="Evento não encontrado."
+        )
 
     verificar_dono_evento(evento_db, usuario_atual, db)
 

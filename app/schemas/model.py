@@ -1,51 +1,66 @@
-from pydantic import BaseModel
+
 from typing import Optional
-class Evento(BaseModel):
-    id: Optional[int] = None
-    titulo: str
-    descricao: str
-    data: str
-    horario: str
-    local: str
-    categoria_id: int
-    organizador_id: int
-    vagas: int
 
-class Categoria(BaseModel):
-        id: Optional[int] = None
-        nome: str
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
-class Usuario(BaseModel):
-    id: Optional[int] = None
-    nome: str
-    email: str
-    tipo: str
 
-class Inscricao(BaseModel):
-    id: Optional[int] = None
-    usuario_id: int
-    evento_id: int
-    status: str
+class SchemaBase(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
 
-class Certificado(BaseModel):
-    id: Optional[int] = None
-    inscricao_id: int
-    codigo: str
-    data_emissao: str
 
-class Organizador(BaseModel):
-    id: Optional[int] = None
-    nome: str
-    email: str
-    tipo: str
+class Evento(SchemaBase):
+    id: Optional[int] = Field(default=None, gt=0)
+    titulo: str = Field(min_length=3, max_length=150)
+    descricao: str = Field(min_length=1)
+    data: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+    horario: str = Field(
+        pattern=r"^(?:[01]\d|2[0-3]):[0-5]\d$"
+    )
+    local: str = Field(min_length=1, max_length=150)
+    categoria_id: int = Field(gt=0)
+    organizador_id: int = Field(gt=0)
+    vagas: int = Field(gt=0)
 
-from pydantic import EmailStr, Field
 
-class UsuarioCadastro(BaseModel):
+class Categoria(SchemaBase):
+    id: Optional[int] = Field(default=None, gt=0)
+    nome: str = Field(min_length=1, max_length=100)
+
+
+class Usuario(SchemaBase):
+    id: Optional[int] = Field(default=None, gt=0)
+    nome: str = Field(min_length=2, max_length=150)
+    email: EmailStr
+    tipo: str = Field(min_length=1, max_length=50)
+
+
+class Inscricao(SchemaBase):
+    id: Optional[int] = Field(default=None, gt=0)
+    usuario_id: int = Field(gt=0)
+    evento_id: int = Field(gt=0)
+    status: str = Field(min_length=1, max_length=50)
+
+
+class Certificado(SchemaBase):
+    id: Optional[int] = Field(default=None, gt=0)
+    inscricao_id: int = Field(gt=0)
+    codigo: str = Field(min_length=1, max_length=100)
+    data_emissao: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
+
+
+class Organizador(SchemaBase):
+    id: Optional[int] = Field(default=None, gt=0)
+    nome: str = Field(min_length=2, max_length=150)
+    email: EmailStr
+    tipo: str = Field(min_length=1, max_length=50)
+
+
+class UsuarioCadastro(SchemaBase):
     nome: str = Field(min_length=2, max_length=150)
     email: EmailStr
     senha: str = Field(min_length=8, max_length=128)
 
-class LoginRequest(BaseModel):
+
+class LoginRequest(SchemaBase):
     email: EmailStr
     senha: str
